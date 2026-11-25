@@ -1,0 +1,149 @@
+"use strict";
+
+const mockData = require("./mockData.js").data;
+const prompt = require("prompt-sync")();
+
+// Your code here
+// console.log(mockData);
+
+const profile = {};
+
+const questionsList = [
+	"What is your first name? ",
+	"What is your last name? ",
+	"What is your age? ",
+	"What is the minimum age you are looking for in dating? ",
+	"What is the maximum age you are looking for in dating? ",
+	"What is your gender? must be one of this (M, F, or X) ",
+	"Which genders are you looking ofr in dating? must be one of this (M, F, or X) ",
+	"What is your location? ",
+];
+
+for (let i = 0; i < questionsList.length; i++) {
+	let answer = "";
+
+	while (true) {
+		answer = prompt(questionsList[i]);
+		//No empty answer
+		if (answer === null || answer.trim().length === 0) {
+			console.log("Enter an answer that's valid");
+			continue;
+		}
+		answer = answer.trim();
+
+		//valid name
+		if (i === 0 && !isNaN(answer)) {
+			console.log("Enter a valid First name.");
+			continue;
+		}
+
+		//valid last name
+		if (i === 1 && !isNaN(answer)) {
+			console.log("Enter a valid Last name.");
+			continue;
+		}
+
+		//valid age
+		if (i === 2 && (isNaN(answer) || Number(answer) < 18)) {
+			console.log("Your age  be grater than 18");
+			continue;
+		}
+
+		//valid minimum age of interest
+		if (i === 3 && (isNaN(answer) || Number(answer) < 18)) {
+			console.log("The minimum valid age has to be grater than 18");
+			continue;
+		}
+
+		//valid maximum age of interest
+		if (i === 4 && (isNaN(answer) || Number(answer) < 18)) {
+			console.log("The maximum valid age has to be grater than 18");
+
+			if (i === 4 && Number(answer) < profile.min_age_interest) {
+				console.log("The maximum valid age can't be less than the minimum age");
+				continue;
+			}
+		}
+
+		//gender validation
+		if (i === 5) {
+			answer = answer.toUpperCase();
+			if (answer !== "M" && answer !== "F" && answer !== "X") {
+				console.log("Gender has to be M, F or X");
+				continue;
+			}
+		}
+
+		//gender interest validation
+		if (i === 6) {
+			answer = answer.toUpperCase();
+			if (answer !== "M" && answer !== "F" && answer !== "X") {
+				console.log("The gender you are looking for can only be M, F or X");
+				continue;
+			}
+		}
+
+		//location validation
+		if (i === 7) {
+			answer = answer.toLocaleLowerCase();
+			if (answer !== "city" && answer !== "rural") {
+				console.log("The location can only be “rural” or “city”.");
+				continue;
+			}
+		}
+		break;
+	}
+
+	//save the answers in the profile object
+	if (i === 0) profile.first_name = answer;
+	if (i === 1) profile.last_name = answer;
+	if (i === 2) profile.age = Number(answer);
+	if (i === 3) profile.min_age_interest = Number(answer);
+	if (i === 4) profile.max_age_interest = Number(answer);
+	if (i === 5) profile.gender = answer;
+	if (i === 6) profile.gender_interest = answer;
+	if (i === 7) profile.location = answer;
+}
+
+console.log("Your profile is done!");
+console.log(profile);
+
+const potentialMatches = [];
+
+//loop that iterates on the mockData array
+for (const candidate of mockData) {
+	// console.log(candidate);
+
+	//age interest
+	const ageMatches =
+		candidate.age > profile.min_age_interest &&
+		candidate.age <= profile.max_age_interest &&
+		profile.age > candidate.min_age_interest &&
+		profile.age <= candidate.max_age_interest;
+
+	//gender math interest
+	const genderMatches =
+		(profile.gender_interest === "x" || profile.gender_interest === candidate.gender) &&
+		(candidate.gender_interest === "x" ||candidate.gender_interest === profile.gender);
+
+	//check location
+	const locationMatches =
+		candidate.location.toLowerCase() === profile.location.toLowerCase();
+
+	if (ageMatches && genderMatches && locationMatches)
+		potentialMatches.push(candidate);
+}
+
+console.log(
+	"========================================================================",
+);
+//potential matches display
+if (potentialMatches.length > 0) {
+	for (let i = 0; i < potentialMatches.length; i++) {
+		const match = potentialMatches[i];
+	}
+	console.log(`First name: ${match.first_name} \nLast name: ${match.last_name} \nAge: ${match.age} \nLocation: ${match.location}`);
+} else {
+	console.log("There are not matches found");
+}
+console.log(`number of matches ${potentialMatches.length}`);
